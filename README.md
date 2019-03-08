@@ -4,6 +4,10 @@ NetCon Ansible Manager V1.1.0
 A commandline GUI based on dialog to manage Ansible settings in complex environments.
 It allows management of Inventories, Groups, Roles, ansible config settings and even ansible vault from a single interface.
 
+<p align="center">
+  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png">
+</p>
+
 ## Prerequisites:
 
 * **vim**, **dialog**, **ansible**  
@@ -39,7 +43,6 @@ Copy **nam.sh** script to your Ansible directory.
 
 ## Screenshots:
 
-![alt text](https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png "Main menu")
 
 ![alt text](https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png "Group menu")
 
