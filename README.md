@@ -5,25 +5,25 @@ A commandline GUI based on dialog to manage Ansible settings in complex environm
 It allows management of Inventories, Groups, Roles, ansible config settings and even ansible vault from a single interface.
 
 <p align="center">
-  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png">
+  <img src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png">
 </p>
 
 
 
 <p align="center">
-  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png ">
+  <img src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png ">
 </p>
 
 
 
 <p align="center">
-  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/role.png">
+  <img src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/role.png">
 </p>
 
 
 
 <p align="center">
-  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/vault.png">
+  <img src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/vault.png">
 </p>
 
 
