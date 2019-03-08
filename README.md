@@ -8,6 +8,25 @@ It allows management of Inventories, Groups, Roles, ansible config settings and 
   <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png">
 </p>
 
+Manage Groups:
+
+<p align="center">
+  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png ">
+</p>
+
+Manage Roles: 
+
+<p align="center">
+  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/role.png">
+</p>
+
+Manage Ansible Vault:
+
+<p align="center">
+  <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/vault.png">
+</p>
+
+
 ## Prerequisites:
 
 * **vim**, **dialog**, **ansible**  
@@ -40,12 +59,3 @@ Copy **nam.sh** script to your Ansible directory.
 * Adding a new host of type **production** will add the host parameters to the **hosts** file and SSH config. For host type **testing** a new host file named after the corresponding inventory host name will be created in the **inventory** directory.
 
 * The **Company groups** menu is only available if a **companies** file exists. The **Export** function will create a tgz-archive with a custom Ansible directory for the selected company group. The function _company_export_ in the script probably will need some individual adjustment if you plan on using that feature.
-
-## Screenshots:
-
-
-![alt text](https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png "Group menu")
-
-![alt text](https://raw.githubusercontent.com/netcon-consulting/nam/master/images/role.png "Role menu")
-
-![alt text](https://raw.githubusercontent.com/netcon-consulting/nam/master/images/vault.png "Vault menu")
