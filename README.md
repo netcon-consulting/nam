@@ -8,19 +8,19 @@ It allows management of Inventories, Groups, Roles, ansible config settings and 
   <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/nam.png">
 </p>
 
-Manage Groups:
+
 
 <p align="center">
   <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/group.png ">
 </p>
 
-Manage Roles: 
+
 
 <p align="center">
   <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/role.png">
 </p>
 
-Manage Ansible Vault:
+
 
 <p align="center">
   <img width="460" height="300" src="https://raw.githubusercontent.com/netcon-consulting/nam/master/images/vault.png">
