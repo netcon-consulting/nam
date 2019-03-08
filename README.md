@@ -1,6 +1,9 @@
 NetCon Ansible Manager V1.1.0
 =============================
 
+A commandline GUI based on dialog to manage Ansible settings in complex environments.
+It allows management of Inventories, Groups, roles and even ansible vault from a single point.
+
 ## Prerequisites:
 
 * **vim**, **dialog**, **ansible**  
