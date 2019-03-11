@@ -30,7 +30,7 @@ It allows management of Inventories, Groups, Roles, ansible config settings and 
 ## Prerequisites:
 
 * **vim**, **dialog**, **ansible**  
-* additionally **gawk**, **gsed** for MacOS
+* additionally **gawk**, **gsed** if run on MacOS
 
 We expect a SSH config file at **~/.ssh/config** and the following structure for the Ansible directory
 
