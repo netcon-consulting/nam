@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# nam.sh V1.1.0
+# nam.sh V1.2.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
@@ -1349,7 +1349,7 @@ role_manage() {
     ARRAY+=('files' 'files')
     while true; do
         exec 3>&1
-        DIALOG_RET=$($DIALOG --clear --title 'Manage role' --backtitle 'Ansible roles' --no-tags --ok-label 'Select' --cancel-label 'Back' --menu '' 0 0 0 "${ARRAY[@]}" 2>&1 1>&3)
+        DIALOG_RET=$($DIALOG --clear --backtitle 'Ansible roles' --no-tags --ok-label 'Select' --cancel-label 'Back' --menu 'Manage role' 0 0 0 "${ARRAY[@]}" 2>&1 1>&3)
         RET_CODE=$?
         exec 3>&-
         if [ $RET_CODE = 0 ]; then
