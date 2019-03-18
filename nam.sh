@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# nam.sh V1.2.0
+# nam.sh V1.3.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
@@ -112,7 +112,7 @@ get_hosts() {
 # return values:
 # list of group names
 get_groups() {
-    grep '^\[' "$1" | grep -v ':' | $CMD_AWK -F '[\\[\\]]' '{print $2}' | sort
+    grep '^\[' "$1" | grep -v ':' | $CMD_AWK -F '[\\[\\]]' '{print $2}' | grep -v '^all$' | sort
 }
 
 # get list of functional group names 
