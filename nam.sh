@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# nam.sh V1.3.0
+# nam.sh V1.4.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
@@ -72,6 +72,8 @@ if ! [ -f "$FILE_PLAYBOOK" ]; then
     echo "Ansible playbook '$FILE_PLAYBOOK' does not exist"
     exit 11
 fi
+FILE_ALIAS="$HOME/.zshrc"
+[ -f "$FILE_ALIAS" ] || FILE_ALIAS="$HOME/.bashrc"
 DIALOG='dialog'
 if ! which $DIALOG &>/dev/null; then
     echo "Please install '$DIALOG'"
@@ -425,12 +427,14 @@ host_edit() {
             fi
 
             COUNT=0
-            FOUND=''
+            HOST_BLOCK=0
             while read LINE; do
                 COUNT="$(expr $COUNT + 1)"
                 if echo $LINE | grep -q "^Host $NEW_NAME\s*$"; then
-                    FOUND=1
-                elif ! [ -z "$FOUND" ]; then
+                    HOST_BLOCK=1
+                elif echo $LINE | grep -q '^Host '; then
+                    HOST_BLOCK=0 
+                elif [ "$HOST_BLOCK" = 1 ]; then
                     if echo $LINE | grep -q -P "^HostName $HOST_ADDRESS\s*$" && [ "$NEW_ADDRESS" != "$HOST_ADDRESS" ]; then
                         $CMD_SED -i "${COUNT}s/$HOST_ADDRESS/$NEW_ADDRESS/" "$SSH_CONFIG"
                     fi
@@ -541,6 +545,7 @@ host_remove() {
         $CMD_SED -i "/^$1\s*/d" "$FILE_HOST"
         $CMD_SED -i "/^$1\s*$/d" "$FILE_FUNCTIONAL"
         [ -f "$FILE_COMPANY" ] && $CMD_SED -i "/^$1\s*$/d" "$FILE_COMPANY"
+        $CMD_SED -i "/^alias $1=/d" "$FILE_ALIAS"
     fi
 }
 
@@ -589,6 +594,12 @@ host_add() {
     if [ "$2" = 'production' ]; then
         echo "Host $1"$'\n\t'"HostName $3"$'\n\t'"User $4"$'\n\t'"Port $5"$'\n' >> "$SSH_CONFIG"
         echo "$1 ansible_python_interpreter=/usr/bin/$6" >> "$FILE_HOST"
+        
+        if echo "$7" | grep -q '\s*clearswift\s*'; then
+            echo "alias $1='ssh -t $1 exec sudo su'" >> "$FILE_ALIAS"
+        else
+            echo "alias $1='ssh $1'" >> "$FILE_ALIAS"
+        fi
     else
         echo "$1 ansible_host=$3 ansible_user=$4 ansible_port=$5 ansible_python_interpreter=/usr/bin/$6" > "$DIR_INVENTORY/$1"
     fi

@@ -1,4 +1,4 @@
-NetCon Ansible Manager V1.3.0
+NetCon Ansible Manager V1.4.0
 =============================
 
 A commandline GUI based on dialog to manage Ansible settings in complex environments.
