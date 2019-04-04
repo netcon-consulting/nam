@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# nam.sh V1.5.0
+# nam.sh V1.6.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
@@ -1358,6 +1358,7 @@ playbook_run() {
     local LIST_HOST
     local FILTER_HOST
     local LIST_FILTERED
+    local NAME_HOST
     local LIST_SHOWN
     local ARRAY_TAG
     local TAG_NAME
@@ -1384,22 +1385,20 @@ playbook_run() {
 		FILTER_HOST=''
 		while true; do
             LIST_FILTERED="$(for NAME_HOST in $LIST_HOST; do if echo "$FILTER_HOST" | grep -q '^!'; then echo "$NAME_HOST" | grep -v "$(echo $FILTER_HOST | $CMD_AWK -F '!' '{print $2}')"; else echo "$NAME_HOST" | grep "$FILTER_HOST"; fi; done)"
-			LIST_SHOWN='Selected hosts:'$'\n'
-			for NAME_HOST in $LIST_FILTERED; do LIST_SHOWN+=$'\n'"$NAME_HOST"; done
+			LIST_SHOWN='Selected hosts:'$'\n\n'"$LIST_FILTERED"
 			$DIALOG --clear --title 'Run playbook' --backtitle 'Manage playbook' --ok-label 'Ok' --cancel-label 'Cancel' --extra-button --extra-label 'Filter' --yesno "$LIST_SHOWN" 20 40
-			if [ "$?" = 0 ]; then
+            RET_CODE=$?
+            if [ $RET_CODE = 0 ]; then
                 ARRAY_TAG=()
-                TAG_NAME
                 for TAG_NAME in $(get_tags); do
                     if [ "$TAG_NAME" = 'base' ]; then
-                        ARRAY_TAG+=("$TAG_NAME" "$TAG_NAME" "on")
+                        ARRAY_TAG+=("$TAG_NAME" "$TAG_NAME" 'on')
                     else
-                        ARRAY_TAG+=("$TAG_NAME" "$TAG_NAME" "off")
+                        ARRAY_TAG+=("$TAG_NAME" "$TAG_NAME" 'off')
                     fi
                 done
-
                 exec 3>&1
-                DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist "Select filtering tags" 0 0 0 "${ARRAY_TAG[@]}" 2>&1 1>&3)"
+                DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist 'Select filtering tags' 0 0 0 "${ARRAY_TAG[@]}" 2>&1 1>&3)"
                 RET_CODE=$?
                 exec 3>&-
                 if [ $RET_CODE = 0 ]; then
