@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# nam.sh V1.6.0
+# nam.sh V1.7.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
 # Authors: Marc Dierksen (m.dierksen@netcon-consulting.com)
 
-SSH_CONFIG="$HOME/.ssh/config"
+declare -r SSH_CONFIG="$HOME/.ssh/config"
 if ! [ -f "$SSH_CONFIG" ]; then
     echo "SSH config '$SSH_CONFIG' does not exist"
     exit 1
 fi
-DIR_ANSIBLE="$(dirname $0)"
+declare -r DIR_ANSIBLE="$(dirname $0)"
 if ! [ -d "$DIR_ANSIBLE" ]; then
     echo "Ansible directory '$DIR_ANSIBLE' does not exist"
     exit 2
 fi
-DIR_ROLES="$DIR_ANSIBLE/roles"
+declare -r DIR_ROLES="$DIR_ANSIBLE/roles"
 if ! [ -d "$DIR_ROLES" ]; then
     echo "Ansible roles directory '$DIR_ROLES' does not exist"
     exit 3
 fi
-if [[ "$OSTYPE" =~ "darwin" ]]; then
+if [[ "$OSTYPE" =~ 'darwin' ]]; then
     if ! which gawk &>/dev/null; then
         echo "Please install 'gawk'"
         exit 4
@@ -30,62 +30,62 @@ if [[ "$OSTYPE" =~ "darwin" ]]; then
         echo "Please install 'gsed'"
         exit 5
     fi
-    CMD_AWK='gawk'
-    CMD_SED='gsed'
+    declare -r CMD_AWK='gawk'
+    declare -r CMD_SED='gsed'
 else
-    CMD_AWK='awk'
-    CMD_SED='sed'
+    declare -r CMD_AWK='awk'
+    declare -r CMD_SED='sed'
 fi
-FILE_CONFIG="$DIR_ANSIBLE/ansible.cfg"
+declare -r FILE_CONFIG="$DIR_ANSIBLE/ansible.cfg"
 if ! [ -f "$FILE_CONFIG" ]; then
     echo "Ansible config '$FILE_CONFIG' does not exist"
     exit 6
 fi
-ANSIBLE_INVENTORY="$(grep '^inventory\s*=' $FILE_CONFIG | $CMD_AWK -F= '{print $2}' | $CMD_SED 's/ //g')"
+declare -r ANSIBLE_INVENTORY="$(grep '^inventory\s*=' $FILE_CONFIG | $CMD_AWK -F= '{print $2}' | $CMD_SED 's/ //g')"
 if [ -z "$ANSIBLE_INVENTORY" ]; then
     echo "Ansible inventory not defined in Ansible config '$FILE_CONFIG'"
     exit 7
 fi
-FILE_PASSWORD="$(grep '^vault_password_file\s*=' $FILE_CONFIG | $CMD_AWK -F= '{print $2}' | $CMD_SED 's/ //g')"
+declare FILE_PASSWORD="$(grep '^vault_password_file\s*=' $FILE_CONFIG | $CMD_AWK -F= '{print $2}' | $CMD_SED 's/ //g')"
 [ -z "$FILE_PASSWORD" ] || FILE_PASSWORD="$DIR_ANSIBLE/$FILE_PASSWORD"
-DIR_VAULT="$DIR_ANSIBLE/group_vars/all"
-FILE_VAULT="$DIR_VAULT/vault.yml"
-DIR_INVENTORY="$DIR_ANSIBLE/$ANSIBLE_INVENTORY"
+declare -r DIR_VAULT="$DIR_ANSIBLE/group_vars/all"
+declare -r FILE_VAULT="$DIR_VAULT/vault.yml"
+declare -r DIR_INVENTORY="$DIR_ANSIBLE/$ANSIBLE_INVENTORY"
 if ! [ -d "$DIR_INVENTORY" ]; then
     echo "Ansible inventory directory '$DIR_INVENTORY' does not exist"
     exit 8
 fi
-FILE_FUNCTIONAL="$DIR_INVENTORY/groups"
+declare -r FILE_FUNCTIONAL="$DIR_INVENTORY/groups"
 if ! [ -f "$FILE_FUNCTIONAL" ]; then
     echo "Ansible groups file '$FILE_FUNCTIONAL' does not exist"
     exit 9
 fi
-FILE_COMPANY="$DIR_INVENTORY/companies"
-FILE_HOST="$DIR_INVENTORY/hosts"
+declare -r FILE_COMPANY="$DIR_INVENTORY/companies"
+declare -r FILE_HOST="$DIR_INVENTORY/hosts"
 if ! [ -f "$FILE_HOST" ]; then
     echo "Ansible hosts file '$FILE_HOST' does not exist"
     exit 10
 fi
-NAME_PLAYBOOK='site.yml'
-FILE_PLAYBOOK="$DIR_ANSIBLE/$NAME_PLAYBOOK"
+declare -r NAME_PLAYBOOK='site.yml'
+declare -r FILE_PLAYBOOK="$DIR_ANSIBLE/$NAME_PLAYBOOK"
 if ! [ -f "$FILE_PLAYBOOK" ]; then
     echo "Ansible playbook '$FILE_PLAYBOOK' does not exist"
     exit 11
 fi
-FILE_ALIAS="$HOME/.zshrc"
+declare -r FILE_ALIAS="$HOME/.zshrc"
 [ -f "$FILE_ALIAS" ] || FILE_ALIAS="$HOME/.bashrc"
-DIALOG='dialog'
+declare -r DIALOG='dialog'
 if ! which $DIALOG &>/dev/null; then
     echo "Please install '$DIALOG'"
     exit 12
 fi
-EDITOR='vim'
+declare -r EDITOR='vim'
 if ! which $EDITOR &>/dev/null; then
     echo "Please install '$EDITOR'"
     exit 13
 fi
-TITLE_MAIN='NetCon Ansible Manager'
-VERSION_MENU="$(grep '^# nam.sh V' $0 | $CMD_AWK '{print $3}')"
+declare -r TITLE_MAIN='NetCon Ansible Manager'
+declare -r VERSION_MENU="$(grep '^# nam.sh V' $0 | $CMD_AWK '{print $3}')"
 
 # pause and ask for keypress
 # parameters:
@@ -103,8 +103,7 @@ get_keypress() {
 # return values:
 # list of inventory host names
 get_hosts() {
-    local LIST_HOST
-    local FILE_INVENTORY
+    declare LIST_HOST FILE_INVENTORY
 
     LIST_HOST="$($CMD_AWK '{print $1}' $FILE_HOST)"
     LIST_HOST+=" $(for FILE_INVENTORY in $(ls $DIR_INVENTORY | grep -v 'hosts' | grep -v 'groups' | grep -v 'companies'); do $CMD_AWK '{print $1}' "$DIR_INVENTORY/$FILE_INVENTORY"; done)"
@@ -145,11 +144,7 @@ get_company() {
 # return values:
 # list of inventory hosts
 get_group_hosts() {
-    local LIST_HOST
-    local HOST_NAME
-    local NUMBER
-    local RANGE_START
-    local RANGE_END
+    declare LIST_HOST HOST_NAME NUMBER RANGE_START RANGE_END
 
     LIST_HOST=''
     for HOST_NAME in $($CMD_SED -n "/^\[$1\]\s*$/,/^\[/{/^\[/d; p}" "$2" | grep -v '^$'); do
@@ -192,9 +187,7 @@ get_company_hosts() {
 # return values:
 # list of groups and associated inventory hosts
 get_group_info() {
-    local LIST_GROUP
-    local GROUP_NAME
-    local LIST_HOST
+    declare LIST_GROUP GROUP_NAME LIST_HOST
 
     LIST_GROUP=''
     for GROUP_NAME in $(grep '^\[' "$1" | grep -v ':' | $CMD_AWK -F '[\\[\\]]' '{print $2}'); do
@@ -261,9 +254,7 @@ add_host_company() {
 # return values:
 # none
 remove_host_group() {
-    local COUNT
-    local FOUND
-    local LINE
+    declare COUNT FOUND LINE
 
     COUNT=0
     FOUND=''
@@ -306,10 +297,8 @@ remove_host_company() {
 # return values:
 # none
 host_add_group() {
-    local ARRAY_GROUP
-    local GROUP_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_GROUP
+    declare GROUP_NAME DIALOG_RET RET_CODE
 
     ARRAY_GROUP=()
     for GROUP_NAME in $2; do
@@ -317,7 +306,7 @@ host_add_group() {
     done
 
     exec 3>&1
-    DIALOG_RET="$($DIALOG --clear --backtitle "Manage associated groups" --ok-label 'Add' --cancel-label 'Cancel' --no-tags --menu 'Add group' 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
+    DIALOG_RET="$($DIALOG --clear --backtitle 'Manage associated groups' --ok-label 'Add' --cancel-label 'Cancel' --no-tags --menu 'Add group' 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
     [ $RET_CODE = 0 ] && add_host_$3 "$1" "$DIALOG_RET"
@@ -330,13 +319,8 @@ host_add_group() {
 # return values:
 # none
 host_groups() {
-    local LIST_INCLUDED
-    local LIST_MISSING
-    local GROUP_INFO
-    local ARRAY_GROUP
-    local GROUP_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_GROUP
+    declare LIST_INCLUDED LIST_MISSING GROUP_INFO GROUP_NAME DIALOG_RET RET_CODE
 
     while true; do
         LIST_INCLUDED=''
@@ -349,7 +333,6 @@ host_groups() {
                 LIST_MISSING+=" $(echo $GROUP_INFO | $CMD_AWK -F, '{print $1}')"
             fi
         done
-
         if ! [ -z "$LIST_INCLUDED" ]; then
             ARRAY_GROUP=()
             for GROUP_NAME in $LIST_INCLUDED; do
@@ -357,7 +340,7 @@ host_groups() {
             done
 
             exec 3>&1
-            DIALOG_RET="$($DIALOG --clear --backtitle "Manage host" --ok-label 'Remove' --extra-button --extra-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated groups' 0 0 0 "${ARRAY[@]}" 2>&1 1>&3)"
+            DIALOG_RET="$($DIALOG --clear --backtitle 'Manage host' --ok-label 'Remove' --extra-button --extra-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated groups' 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
             RET_CODE=$?
             exec 3>&-
             if [ $RET_CODE = 0 ]; then
@@ -368,7 +351,7 @@ host_groups() {
                 break
             fi
         else
-            $DIALOG --clear --backtitle "Manage host" --ok-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated groups' 0 0 0 '' 'No groups'
+            $DIALOG --clear --backtitle 'Manage host' --ok-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated groups' 0 0 0 '' 'No groups'
             if [ "$?" = 0 ]; then
                 host_add_group "$1" "$LIST_MISSING" "$2"
             else
@@ -402,25 +385,8 @@ host_company() {
 # return values:
 # none
 host_edit() {
-    local NAME_FILE
-    local TESTING
-    local HOST_INFO
-    local HOST_ADDRESS
-    local HOST_USER
-    local HOST_PORT
-    local HOST_PYTHON
-    local DIALOG_RET
-    local RET_CODE
-    local NEW_NAME
-    local NEW_ADDRESS
-    local NEW_USER
-    local NEW_PORT
-    local NEW_PYTHON
-    local HOST_LINE
-    local NEW_LINE
-    local COUNT
-    local HOST_BLOCK
-    local LINE
+    declare NAME_FILE TESTING HOST_INFO HOST_ADDRESS HOST_USER HOST_PORT HOST_PYTHON DIALOG_RET RET_CODE NEW_NAME NEW_ADDRESS NEW_USER \
+        NEW_PORT NEW_PYTHON HOST_LINE NEW_LINE COUNT HOST_BLOCK LINE
 
     NAME_FILE="$DIR_INVENTORY/$1"
     TESTING=''
@@ -527,7 +493,7 @@ server_ping() {
 # return values:
 # list of tags
 get_tags() {
-    local LIST_TAG
+    declare LIST_TAG
 
     LIST_TAG="$(grep 'tags:' $FILE_PLAYBOOK | $CMD_AWK -F '[\\[\\]]' '{print $2}' | $CMD_AWK -F, '{for (i=1;i<=NF;i++) print $i}')"
     LIST_TAG+="$(grep -r '^\s*tags: ' $DIR_ROLES | $CMD_AWK -F 'tags: ' '{print $2}')"
@@ -540,11 +506,8 @@ get_tags() {
 # return values:
 # none
 single_playbook() {
-    local ARRAY_TAG
-    local TAG_NAME
-    local DIALOG_RET
-    local RET_CODE
-    local LIST_TAGS
+    declare -a ARRAY_TAG
+    declare TAG_NAME DIALOG_RET RET_CODE LIST_TAGS
 
     ARRAY_TAG=()
     for TAG_NAME in $(get_tags); do
@@ -556,7 +519,7 @@ single_playbook() {
     done
 
     exec 3>&1
-    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist "Select filtering tags" 0 0 0 "${ARRAY_TAG[@]}" 2>&1 1>&3)"
+    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist 'Select filtering tags' 0 0 0 "${ARRAY_TAG[@]}" 2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
     if [ $RET_CODE = 0 ]; then
@@ -612,9 +575,8 @@ host_remove() {
 # return values:
 # none
 host_manage() {
-    local ARRAY_MANAGE
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_MANAGE
+    declare DIALOG_RET RET_CODE
 
     ARRAY_MANAGE=()
     ARRAY_MANAGE+=('host_functional' 'Manage functional groups')
@@ -626,7 +588,7 @@ host_manage() {
     ARRAY_MANAGE+=('host_remove' 'Remove')
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label "Back" --ok-label "Ok" \
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label 'Back' --ok-label 'Ok' \
             --menu "Manage host '$1'" 0 40 0 "${ARRAY_MANAGE[@]}" 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
@@ -652,7 +614,7 @@ host_manage() {
 # return values:
 # none
 host_add() {
-    local GROUP_NAME
+    declare GROUP_NAME
 
     if [ "$2" = 'production' ]; then
         echo "Host $1"$'\n\t'"HostName $3"$'\n\t'"User $4"$'\n\t'"Port $5"$'\n' >> "$SSH_CONFIG"
@@ -684,22 +646,12 @@ host_add() {
 # return values:
 # none
 host_new() {
-    local DIALOG_RET
-    local RET_CODE
-    local HOST_NAME
-    local HOST_TYPE
-    local HOST_ADDRESS
-    local HOST_USER
-    local HOST_PORT
-    local HOST_PYTHON
-    local ARRAY_GROUP
-    local GROUP_NAME
-    local LIST_FUNCTIONAL
-    local LIST_COMPANY
+    declare -a ARRAY_GROUP
+    declare DIALOG_RET RET_CODE HOST_NAME HOST_TYPE HOST_ADDRESS HOST_USER HOST_PORT HOST_PYTHON GROUP_NAME LIST_FUNCTIONAL LIST_COMPANY
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter inventory host name" 0 55 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter inventory host name' 0 55 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -709,9 +661,9 @@ host_new() {
 
     exec 3>&1
     DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags \
-        --menu "Select host type" 0 0 0                                             \
-        "production" "production"                                                   \
-        "testing" "testing"                                                         \
+        --menu 'Select host type' 0 0 0                                             \
+        'production' 'production'                                                   \
+        'testing' 'testing'                                                         \
         2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
@@ -720,7 +672,7 @@ host_new() {
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter host address" 0 55 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter host address' 0 55 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -730,7 +682,7 @@ host_new() {
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter SSH user" 0 55 'root' 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter SSH user' 0 55 'root' 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -740,7 +692,7 @@ host_new() {
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter SSH port" 0 55 '22' 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter SSH port' 0 55 '22' 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -750,9 +702,9 @@ host_new() {
 
     exec 3>&1
     DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags \
-        --menu "Select Python interpreter" 0 0 0                                    \
-        "python" "Python 2.x"                                                       \
-        "python3" "Python 3.x"                                                      \
+        --menu 'Select Python interpreter' 0 0 0                                    \
+        'python' 'Python 2.x'                                                       \
+        'python3' 'Python 3.x'                                                      \
         2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
@@ -761,11 +713,11 @@ host_new() {
 
     ARRAY_GROUP=()
     for GROUP_NAME in $(get_functional); do
-        ARRAY_GROUP+=("$GROUP_NAME" "$GROUP_NAME" "off")
+        ARRAY_GROUP+=("$GROUP_NAME" "$GROUP_NAME" 'off')
     done
 
     exec 3>&1
-    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist "Select associated functional groups" 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
+    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist 'Select associated functional groups' 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
     [ "$RET_CODE" != 0 ] && return
@@ -774,11 +726,11 @@ host_new() {
     if [ -f "$FILE_COMPANY" ]; then
         ARRAY_GROUP=()
         for GROUP_NAME in $(get_company); do
-            ARRAY_GROUP+=("$GROUP_NAME" "$GROUP_NAME" "off")
+            ARRAY_GROUP+=("$GROUP_NAME" "$GROUP_NAME" 'off')
         done
 
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist "Select associated company groups" 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist 'Select associated company groups' 0 0 0 "${ARRAY_GROUP[@]}" 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -794,11 +746,8 @@ host_new() {
 # return values:
 # none
 host_menu() {
-    local LIST_HOST
-    local ARRAY_HOST
-    local HOST_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_HOST
+    declare LIST_HOST HOST_NAME DIALOG_RET RET_CODE
 
     while true; do
         LIST_HOST="$(get_hosts)"
@@ -838,10 +787,8 @@ host_menu() {
 # return values:
 # none
 group_add_host() {
-    local ARRAY_HOST
-    local HOST_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_HOST
+    declare HOST_NAME DIALOG_RET RET_CODE
 
     ARRAY_HOST=()
     for HOST_NAME in $2; do
@@ -849,7 +796,7 @@ group_add_host() {
     done
 
     exec 3>&1
-    DIALOG_RET="$($DIALOG --clear --backtitle "Manage associated hosts" --ok-label 'Add' --cancel-label 'Cancel' --no-tags --menu 'Add host' 20 40 40 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
+    DIALOG_RET="$($DIALOG --clear --backtitle 'Manage associated hosts' --ok-label 'Add' --cancel-label 'Cancel' --no-tags --menu 'Add host' 20 40 40 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
     [ $RET_CODE = 0 ] && add_host_$3 "$DIALOG_RET" "$1"
@@ -862,12 +809,8 @@ group_add_host() {
 # return values:
 # none
 group_hosts() {
-    local LIST_INCLUDED
-    local LIST_MISSING
-    local HOST_NAME
-    local ARRAY_HOST
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_HOST
+    declare LIST_INCLUDED LIST_MISSING HOST_NAME DIALOG_RET RET_CODE
 
     while true; do
         LIST_INCLUDED="$(get_$2_hosts $1 | $CMD_SED 's/,/ /g')"
@@ -883,7 +826,7 @@ group_hosts() {
             done
 
             exec 3>&1
-            DIALOG_RET="$($DIALOG --clear --backtitle "Manage group" --ok-label 'Remove' --extra-button --extra-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated hosts' 0 0 0 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
+            DIALOG_RET="$($DIALOG --clear --backtitle 'Manage group' --ok-label 'Remove' --extra-button --extra-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated hosts' 0 0 0 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
             RET_CODE=$?
             exec 3>&-
             if [ $RET_CODE = 0 ]; then
@@ -894,7 +837,7 @@ group_hosts() {
                 break
             fi
         else
-            $DIALOG --clear --backtitle "Manage group" --ok-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated hosts' 0 0 0 '' 'No hosts'
+            $DIALOG --clear --backtitle 'Manage group' --ok-label 'Add' --cancel-label 'Back' --no-tags --menu 'Associated hosts' 0 0 0 '' 'No hosts'
             if [ "$?" = 0 ]; then
                 group_add_host "$1" "$(get_hosts)" "$2"
             else
@@ -948,25 +891,8 @@ functional_remove() {
 # return values:
 # none
 company_export() {
-    local COPY_FILE
-    local COPY_DIR
-    local DELETE_FILE
-    local DELETE_DIR
-    local DEST_ANSIBLE
-    local DEST_ROLE
-    local DEST_INVENTORY
-    local DEST_HOST
-    local DEST_GROUP
-    local DEST_COMPANY
-    local FILE_NAME
-    local DIR_NAME
-    local LIST_LINE
-    local LINE_COUNT
-    local LINE_NUM
-    local LINE_START
-    local LINE_END
-    local FILE_ARCHIVE
-    local RET_CODE
+    declare COPY_FILE COPY_DIR DELETE_FILE DELETE_DIR DEST_ANSIBLE DEST_ROLE DEST_INVENTORY DEST_HOST DEST_GROUP DEST_COMPANY \
+        FILE_NAME DIR_NAME LIST_LINE LINE_COUNT LINE_NUM LINE_START LINE_END FILE_ARCHIVE RET_CODE
 
     $DIALOG --clear --title 'Export' --backtitle 'Manage group' --ok-label 'Export' --cancel-label 'Cancel' --yesno "Export custom Ansible directory for group '$1'?" 0 0
 
@@ -1047,9 +973,9 @@ company_export() {
         rm -rf $DEST_ANSIBLE
 
         if [ "$RET_CODE" = 0 ] && [ -f "$FILE_ARCHIVE" ]; then
-            dialog --backtitle "Manage group" --title "Export successful" --clear --msgbox "Custom Ansible directory succesfully exported to archive '$FILE_ARCHIVE'" 0 0
+            dialog --backtitle 'Manage group' --title 'Export successful' --clear --msgbox "Custom Ansible directory succesfully exported to archive '$FILE_ARCHIVE'" 0 0
         else
-            dialog --backtitle "Manage group" --title "Export failed" --clear --msgbox "Export of custom Ansible directory has failed" 0 0
+            dialog --backtitle 'Manage group' --title 'Export failed' --clear --msgbox 'Export of custom Ansible directory has failed' 0 0
         fi
     fi
 }
@@ -1070,9 +996,8 @@ company_remove() {
 # return values:
 # none
 group_manage() {
-    local ARRAY_MANAGE
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_MANAGE
+    declare DIALOG_RET RET_CODE
 
     ARRAY_MANAGE=()
     ARRAY_MANAGE+=("$2_hosts" 'Manage hosts')
@@ -1083,7 +1008,7 @@ group_manage() {
     ARRAY_MANAGE+=("$2_remove" 'Remove')
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label "Back" --ok-label "Ok" --menu "Manage group '$1'" 0 40 0 "${ARRAY_MANAGE[@]}" 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label 'Back' --ok-label 'Ok' --menu "Manage group '$1'" 0 40 0 "${ARRAY_MANAGE[@]}" 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         if [ $RET_CODE = 0 ]; then
@@ -1103,7 +1028,7 @@ group_manage() {
 # return values:
 # none
 group_add() {
-    local HOST_NAME
+    declare HOST_NAME
 
     echo "[$1]" >> "$3"
 
@@ -1138,15 +1063,12 @@ company_add() {
 # return values:
 # none
 group_new() {
-    local DIALOG_RET
-    local RET_CODE
-    local GROUP_NAME
-    local ARRAY_HOST
-    local HOST_NAME
+    declare -a ARRAY_HOST
+    declare DIALOG_RET RET_CODE GROUP_NAME HOST_NAME
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter inventory group name" 0 55 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter inventory group name' 0 55 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -1160,7 +1082,7 @@ group_new() {
     done
 
     exec 3>&1
-    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist "Select associated hosts" 0 0 0 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
+    DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --checklist 'Select associated hosts' 0 0 0 "${ARRAY_HOST[@]}" 2>&1 1>&3)"
     RET_CODE=$?
     exec 3>&-
     if [ $RET_CODE = 0 ]; then
@@ -1176,11 +1098,8 @@ group_new() {
 # return values:
 # none
 group_menu() {
-    local LIST_GROUP
-    local ARRAY_GROUP
-    local GROUP_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_GROUP
+    declare LIST_GROUP GROUP_NAME DIALOG_RET RET_CODE
 
     while true; do
         LIST_GROUP="$(get_$1)"
@@ -1236,8 +1155,7 @@ company_menu() {
 # return values:
 # none
 vault_new() {
-    local DIALOG_RET
-    local RET_CODE
+    declare DIALOG_RET RET_CODE
 
     if [ -f "$FILE_VAULT" ]; then
         $DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --ok-label 'Ok' --cancel-label 'Cancel' --yesno 'Delete current vault and create new one?' 0 0
@@ -1251,13 +1169,13 @@ vault_new() {
     else
         while true; do
             exec 3>&1
-            DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter vault password" 0 55 2>&1 1>&3)"
+            DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter vault password' 0 55 2>&1 1>&3)"
             RET_CODE=$?
             exec 3>&-
             [ "$RET_CODE" != 0 ] && return
             [ -z "$DIALOG_RET" ] || break
         done
-        if [[ "$OSTYPE" =~ "darwin" ]]; then
+        if [[ "$OSTYPE" =~ 'darwin' ]]; then
             security delete-generic-password -a vault_pw -s ansible &>/dev/null
             security add-generic-password -a vault_pw -s ansible -w "$DIALOG_RET" &>/dev/null
         else
@@ -1287,9 +1205,7 @@ vault_edit() {
 # return values:
 # none
 vault_password() {
-    local DIALOG_RET
-    local RET_CODE
-    local FILE_TMP
+    declare  DIALOG_RET RET_CODE FILE_TMP
 
     if [ -z "$FILE_PASSWORD" ]; then
         clear
@@ -1309,7 +1225,7 @@ vault_password() {
         else
             cp $FILE_PASSWORD $FILE_TMP
         fi
-        if [[ "$OSTYPE" =~ "darwin" ]]; then
+        if [[ "$OSTYPE" =~ 'darwin' ]]; then
             security delete-generic-password -a vault_pw -s ansible &>/dev/null
             security add-generic-password -a vault_pw -s ansible -w "$DIALOG_RET" &>/dev/null
         else
@@ -1326,9 +1242,8 @@ vault_password() {
 # return values:
 # none
 vault_manage() {
-    local ARRAY_MANAGE
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_MANAGE
+    declare DIALOG_RET RET_CODE
 
     while true; do
         ARRAY_MANAGE=()
@@ -1337,7 +1252,7 @@ vault_manage() {
         [ -f "$FILE_VAULT" ] && ARRAY_MANAGE+=('vault_password' 'Change password')
 
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label "Back" --ok-label "Ok" --menu 'Manage vault' 0 40 0 "${ARRAY_MANAGE[@]}" 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --cancel-label 'Back' --ok-label 'Ok' --menu 'Manage vault' 0 40 0 "${ARRAY_MANAGE[@]}" 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         if [ $RET_CODE = 0 ]; then
@@ -1354,16 +1269,8 @@ vault_manage() {
 # return values:
 # none
 playbook_run() {
-    local FILTER_PLAYBOOK
-    local LIST_HOST
-    local FILTER_HOST
-    local LIST_FILTERED
-    local NAME_HOST
-    local LIST_SHOWN
-    local ARRAY_TAG
-    local TAG_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_TAG
+    declare FILTER_PLAYBOOK LIST_HOST FILTER_HOST LIST_FILTERED NAME_HOST LIST_SHOWN TAG_NAME DIALOG_RET RET_CODE
 
 	FILTER_PLAYBOOK="$(grep '^\s*-\?\s*hosts: ' "$FILE_PLAYBOOK" | head -1 | $CMD_AWK -F 'hosts:' '{print $2}' | $CMD_SED 's/"//g' | $CMD_SED 's/,/ /g')"
     LIST_HOST=''
@@ -1467,9 +1374,8 @@ playbook_edit() {
 # return values:
 # none
 playbook_manage() {
-    local ARRAY_MANAGE
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_MANAGE
+    declare DIALOG_RET RET_CODE
 
     ARRAY_MANAGE=()
     ARRAY_MANAGE+=('playbook_run' 'Run')
@@ -1506,9 +1412,8 @@ role_edit() {
 # return values:
 # none
 role_manage() {
-    local ARRAY_MANAGE
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_MANAGE
+    declare DIALOG_RET RET_CODE
 
     ARRAY_MANAGE=()
     ARRAY_MANAGE+=('tasks' 'tasks')
@@ -1535,12 +1440,11 @@ role_manage() {
 # return values:
 # none
 role_new() {
-    local DIALOG_RET
-    local RET_CODE
+    declare DIALOG_RET RET_CODE
 
     while true; do
         exec 3>&1
-        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox "Enter role name" 0 55 2>&1 1>&3)"
+        DIALOG_RET="$($DIALOG --clear --backtitle "$TITLE_MAIN $VERSION_MENU" --no-tags --inputbox 'Enter role name' 0 55 2>&1 1>&3)"
         RET_CODE=$?
         exec 3>&-
         [ "$RET_CODE" != 0 ] && return
@@ -1556,11 +1460,8 @@ role_new() {
 # return values:
 # none
 role_menu() {
-    local LIST_ROLE
-    local ARRAY_ROLE
-    local ROLE_NAME
-    local DIALOG_RET
-    local RET_CODE
+    declare -a ARRAY_ROLE
+    declare LIST_ROLE ARRAY_ROLE ROLE_NAME DIALOG_RET RET_CODE
 
     while true; do
         LIST_ROLE="$(ls $DIR_ANSIBLE/roles)"
@@ -1602,7 +1503,9 @@ edit_config() {
 }
 
 # main menu
-ARRAY_MAIN=()
+declare -a ARRAY_MAIN=()
+declare DIALOG_RET RET_CODE
+
 ARRAY_MAIN+=('host_menu' 'Hosts')
 ARRAY_MAIN+=('functional_menu' 'Functional groups')
 [ -f "$FILE_COMPANY" ] && ARRAY_MAIN+=('company_menu' 'Company groups')
