@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# nam.sh V1.7.0
+# nam.sh V1.8.0
 #
 # Copyright (c) 2019 NetCon Unternehmensberatung GmbH, netcon-consulting.com
 #
@@ -72,7 +72,7 @@ if ! [ -f "$FILE_PLAYBOOK" ]; then
     echo "Ansible playbook '$FILE_PLAYBOOK' does not exist"
     exit 11
 fi
-declare -r FILE_ALIAS="$HOME/.zshrc"
+declare FILE_ALIAS="$HOME/.zshrc"
 [ -f "$FILE_ALIAS" ] || FILE_ALIAS="$HOME/.bashrc"
 declare -r DIALOG='dialog'
 if ! which $DIALOG &>/dev/null; then
